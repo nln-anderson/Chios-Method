@@ -1,0 +1,68 @@
+# Chio's Method for Solving an n x n Matrix
+# Code is modeled from: Heffernon, J. (2022). Linear Algebra, 4th Edition
+
+    # DOESN"T HANDLE CASE WHERE THE FIRST ENTRY IS 0
+
+def two_by_two_determinant(a,b,c,d):
+    """
+    Calculates the determinant of a 2x2 matrix. 
+
+    PARAMETERS:
+    a,b,c,d (type: float) - the entries of a 2x2 matrix
+
+    OUTPUT:
+    determinant (type: float) - the determinant of the 2x2 matrix
+    """
+
+    determinant = a * d - c * b
+
+    return determinant
+
+def Chios_Matrix(matrix):
+    """
+    Creates Chio's Matrix of a given matrix input.
+
+    PARAMETERS:
+    matrix (type: array) - an nxn matrix
+
+    OUTPUT:
+    c_matrix (type: array) - Chio's matrix, an (n-1) x (n-1) matrix 
+    """
+
+    n = len(matrix)
+    c_matrix = []
+
+    for num in range(n-1):
+        # Create a row
+        c_matrix.append([])
+
+        for num2 in range(n-1):
+            c_matrix[-1].append(two_by_two_determinant(matrix[0][0], matrix[0][num2 + 1], matrix[num + 1][0], matrix[num + 1 ][num2+1]))
+        
+    return c_matrix
+
+def determinant_calculator(matrix):
+    """
+    Calculates the determinant of an n x n matrix using Chio's Method
+
+    PARAMETERS:
+    matrix (type: arrary) - an n x n matrix
+
+    OUTPUT:
+    determinant (type: float) - the determinant of the matrix
+    """
+    n = len(matrix)
+
+    # Base Case
+    if n == 1:
+        return matrix[0][0]
+    
+    # Chio's Method
+    else:
+        
+        c_matrix = Chios_Matrix(matrix)
+        
+        return determinant_calculator(c_matrix) / ((matrix[0][0])**(n-2))
+    
+# Example
+determinant_calculator([[3,1,2,-6],[1,5,2,1],[6,2,1,-7],[-6,-1,-2,5]])
