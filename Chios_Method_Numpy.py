@@ -3,6 +3,8 @@
 
     # DOESN"T HANDLE CASE WHERE THE FIRST ENTRY a_11 IS 0
 
+import numpy as np
+
 def two_by_two_determinant(a: float,b: float,c: float,d: float) -> float:
     """
     Calculates the determinant of a 2x2 matrix. 
@@ -18,7 +20,7 @@ def two_by_two_determinant(a: float,b: float,c: float,d: float) -> float:
 
     return determinant
 
-def Chios_Matrix(matrix):
+def Chios_Matrix(matrix: np.ndarray) -> np.ndarray:
     """
     Creates Chio's Matrix of a given matrix input.
 
@@ -28,20 +30,22 @@ def Chios_Matrix(matrix):
     OUTPUT:
     c_matrix (type: array) - Chio's matrix, an (n-1) x (n-1) matrix 
     """
-
+    # Establish matrix dimensions
     n = len(matrix)
-    c_matrix = []
 
-    for num in range(n-1):
-        # Create a row
-        c_matrix.append([])
+    # Create an empty matrix that will be filled with Chio determinants
+    c_matrix = np.zeros((n-1, n-1))
 
-        for num2 in range(n-1):
-            c_matrix[-1].append(two_by_two_determinant(matrix[0][0], matrix[0][num2 + 1], matrix[num + 1][0], matrix[num + 1 ][num2+1]))
+    # Filling the entries
+    for i in range(n-1):
+        # For each row
+        for j in range(n-1):
+            # For each entry in the row (aka column), compute the corresponding 2x2 determinant
+            c_matrix[i, j] = two_by_two_determinant(matrix[0,0], matrix[0,j + 1], matrix[i + 1,0], matrix[i + 1,j+1])
         
     return c_matrix
 
-def determinant_calculator(matrix):
+def determinant_calculator_chio(matrix: np.ndarray) -> float:
     """
     Calculates the determinant of an n x n matrix using Chio's Method
 
@@ -62,7 +66,7 @@ def determinant_calculator(matrix):
         
         c_matrix = Chios_Matrix(matrix)
         
-        return determinant_calculator(c_matrix) / ((matrix[0][0])**(n-2))
+        return determinant_calculator_chio(c_matrix) / ((matrix[0][0])**(n-2))
     
 # Example
-determinant_calculator([[3,1,2,-6],[1,5,2,1],[6,2,1,-7],[-6,-1,-2,5]])
+print(determinant_calculator_chio(np.array([[3,1,2,-6],[1,5,2,1],[6,2,1,-7],[-6,-1,-2,5]])))
