@@ -14,6 +14,10 @@ def two_by_two_determinant(a: float,b: float,c: float,d: float) -> float:
 
     OUTPUT:
     determinant (type: float) - the determinant of the 2x2 matrix
+    
+    DOCTESTS:
+    >>> two_by_two_determinant(2,3,4,5)
+    -2
     """
 
     determinant = a * d - c * b
@@ -29,6 +33,12 @@ def Chios_Matrix(matrix: np.ndarray) -> np.ndarray:
 
     OUTPUT:
     c_matrix (type: array) - Chio's matrix, an (n-1) x (n-1) matrix 
+
+    DOCTESTS:
+    >>> mat = Chios_Matrix(np.array([[2,1,1], [3,4,-1], [1,5,1]]))
+    >>> print(mat)
+    [[ 5. -5.]
+     [ 9.  1.]]
     """
     # Establish matrix dimensions
     n = len(matrix)
@@ -54,6 +64,10 @@ def determinant_calculator_chio(matrix: np.ndarray) -> float:
 
     OUTPUT:
     determinant (type: float) - the determinant of the matrix
+
+    DOCTESTS:
+    >>> determinant_calculator_chio(np.array([[2,1,1], [3,4,-1], [1,5,1]]))
+    25.0
     """
     n = len(matrix)
 
