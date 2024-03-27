@@ -221,7 +221,7 @@ class ChioController:
         """
         Use the model to find the determinant and update the result label with the result.
         """
-        # Get matrix entries from the view, and make sure they are numbers
+        # Get matrix entries from the view, and make sure they are numbers and display a message accordingly
         try:
             matrix_entries = []
             for row in self.view.entry_widgets:
