@@ -105,6 +105,8 @@ class ChioView(ctk.CTkFrame):
     entry_widgets: list[list[ctk.CTkEntry]] # Matrix entries used in model
     result_lab: ctk.CTkLabel
     calc_det_but: ctk.CTkButton
+    confirm_but: ctk.CTkButton
+    message_lab: ctk.CTkLabel
 
     # Constructor
     def __init__(self, parent: ctk.CTk, model: ChioModel) -> None:
@@ -116,7 +118,7 @@ class ChioView(ctk.CTkFrame):
 
     # Methods
     def create_ui(self) -> None:
-        # Create the top frame, mat frame, and bottom frame and pack it
+        # Create the dim frame (set dim), mat frame (matrix entries), and bottom frame (calculate and messages) and pack it
         dim_frame = ctk.CTkFrame(self)
         dim_frame.pack(side= "top")
 
@@ -125,19 +127,22 @@ class ChioView(ctk.CTkFrame):
         bottom_frame = ctk.CTkFrame(self)
         bottom_frame.pack(side= "top")
 
-        # Create the widgets wihtin the frame
-        # Top
+        # Create the widgets within the frame
+        # Dim Frame
         dim_label = ctk.CTkLabel(dim_frame, text="Dimension of Matrix:")
         dim_entry = ctk.CTkEntry(dim_frame)
-        confirm_but = ctk.CTkButton(dim_frame, text= "Confirm", command=self.set_dim)
-        # Bottom
-        calc_det_but = ctk.CTkButton(bottom_frame, text="Calculate Determinant", command= self.calculate_det)
-        result_lab = ctk.CTkLabel(bottom_frame, text="Select size, fill entries, hit calculate")
+        confirm_but = ctk.CTkButton(dim_frame, text= "Confirm")
+        # Bottom Frame
+        calc_det_but = ctk.CTkButton(bottom_frame, text="Calculate Determinant")
+        result_lab = ctk.CTkLabel(bottom_frame, text= "det= ")
+        message_lab = ctk.CTkLabel(bottom_frame, text="Select size, fill entries, hit calculate!")
 
-        # Make sure that entry and lable are assigned as instance vars
+        # Make sure that entry and labels are assigned as instance vars since we need to access them in the controller
         self.dim_entry = dim_entry
         self.result_lab = result_lab
         self.calc_det_but = calc_det_but
+        self.confirm_but = confirm_but
+        self.message_lab = message_lab
 
         # Packing them within the frame
         # Top
@@ -145,62 +150,10 @@ class ChioView(ctk.CTkFrame):
         dim_entry.pack(side= "left")
         confirm_but.pack(side= "left")
         # Bottom
-        calc_det_but.pack(side= "left")
-        result_lab.pack(side= "left")
+        calc_det_but.grid(row=0, column= 0)
+        result_lab.grid(row=0, column= 1)
+        message_lab.grid(row=1, column= 0, columnspan = 2)
     
-    def set_dim(self) -> None:
-        """
-        When the confirm button is pressed, create the matrix layout.
-        """
-        dimension = int(self.dim_entry.get())  # Get the dimension from the entry
-        self.set_mat(dimension)
-    
-    def calculate_det(self):
-        """
-        Use the model to find the determinant and update the result label with the result.
-        """
-        # Get matrix entries from the view
-        matrix_entries = []
-        for row in self.entry_widgets:
-            row_list = []
-            for entry in row:
-                row_list.append(float(entry.get()))
-            matrix_entries.append(row_list)
-
-        # Create an np array to run the calculation
-        matrix = np.array(matrix_entries)
-
-        # Calculate determinant with the model
-        det = self.model.determinant_calculator_chio(matrix)
-        print(det)
-
-        self.result_lab.configure(text = f"Determinant: {det}")
-
-    def set_mat(self, dim: int) -> None:
-        """
-        Creates the matrix entries within the mat_frame based on the dimension in the entry box.
-        """
-
-        # Clear anything in the mat_frame
-        for widget in self.mat_frame.winfo_children():
-            widget.destroy()
-
-        # Clear existing entry widgets
-        self.entry_widgets.clear()
-
-        # Create the matrix of entry boxes
-        for i in range(dim):
-            row_widgets = []  # To store widgets in each row
-            for j in range(dim):
-                entry = ctk.CTkEntry(self.mat_frame)
-                entry.grid(row=i, column=j)
-                row_widgets.append(entry)  # Append entry widget to row_widgets
-            self.entry_widgets.append(row_widgets)  # Append row_widgets to entry_widgets
-
-        # Pack the matrix frame
-        self.mat_frame.pack(side="top")
-
-
 class ChioController:
     """
     Connects the view and model and handles communication between the two.
@@ -214,25 +167,70 @@ class ChioController:
         self.model = model
         self.view = view
         self.set_button()
+        self.set_confirm()
+
+    # Methods
+    def set_confirm(self) -> None:
+        """
+        Sets the confirm button function to the find_dim function.
+        """
+        self.view.confirm_but.configure(command= self.find_dim)
+
+    def find_dim(self) -> None:
+        """
+        When the confirm button is pressed, create the matrix layout.
+        """
+        # Get the dimension from the entry, making sure it is an integer
+        dimension = self.view.dim_entry.get()
+        try:
+            dimension = int(dimension)
+            self.create_mat(dimension)
+        except ValueError:
+            self.show_message("Dimension must be an integer.")
+
+    def create_mat(self, dim: int) -> None:
+        """
+        Creates the matrix entries within the mat_frame based on the dimension in the entry box.
+        """
+        # Clear anything in the mat_frame
+        for widget in self.view.mat_frame.winfo_children():
+            widget.destroy()
+
+        # Clear existing entry widgets
+        self.view.entry_widgets.clear()
+
+        # Create the matrix of entry boxes
+        for i in range(dim):
+            row_widgets = []  # To store widgets in each row
+            for j in range(dim):
+                entry = ctk.CTkEntry(self.view.mat_frame)
+                entry.grid(row=i, column=j)
+                row_widgets.append(entry)  # Append entry widget to row_widgets
+            self.view.entry_widgets.append(row_widgets)  # Append row_widgets to entry_widgets
+
+        # Pack the matrix frame
+        self.view.mat_frame.pack(side="top")
 
     def set_button(self):
         """
         Sets the command of the calculate button within the view.
         """
-        
-        self.view.calc_det_but["command"] = self.calculate_det
+        self.view.calc_det_but.configure(command = self.calculate_det)
 
     def calculate_det(self):
         """
         Use the model to find the determinant and update the result label with the result.
         """
-        # Get matrix entries from the view
-        matrix_entries = []
-        for row in self.view.entry_widgets:
-            row_list = []
-            for entry in row:
-                row_list.append(float(entry.get()))
-            matrix_entries.append(row_list)
+        # Get matrix entries from the view, and make sure they are numbers
+        try:
+            matrix_entries = []
+            for row in self.view.entry_widgets:
+                row_list = []
+                for entry in row:
+                    row_list.append(float(entry.get()))
+                matrix_entries.append(row_list)
+        except ValueError:
+            self.show_message("Matrix entries must be numbers.")
 
         # Create an np array to run the calculation
         matrix = np.array(matrix_entries)
@@ -240,7 +238,13 @@ class ChioController:
         # Calculate determinant with the model
         det = self.model.determinant_calculator_chio(matrix)
 
-        self.view.result_lab.config(text=f"Determinant: {det}")
+        self.view.result_lab.configure(text=f"Determinant: {det}")
+
+    def show_message(self, string: str) -> None:
+        """
+        Given a string, change the message label in the view to display the string.
+        """
+        self.view.message_lab.configure(text= string)
 
 def main():
     """
@@ -248,10 +252,12 @@ def main():
     """
     # Create the window where we place the app
     window = ctk.CTk()
+    window.title("Determinant Calculator")
 
     # Create the MVC
     m = ChioModel()
     v = ChioView(window, m)
+    c = ChioController(m,v)
 
     # Pack the view
     v.pack(side= "top")
